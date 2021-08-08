@@ -4,25 +4,37 @@ import { Paper, Typography, useMediaQuery } from '@material-ui/core';
 import LocationOnOutlinedIcon from '@material-ui/icons/LocationOnOutlined';
 import { Rating } from '@material-ui/lab';
 import useStyles from './styles';
+import { mapStyles } from './mapStyles';
 
-export default function Map({ coords, setCoords, setBounds, places }) {
+export default function Map({
+  coords,
+  setCoords,
+  setBounds,
+  places,
+  setChildClicked,
+  weatherData
+}) {
   const classes = useStyles();
   const isMobile = useMediaQuery('(min-width: 600px)');
 
   return (
     <div className={classes.mapContainer}>
       <GoogleMapReact
-        bootstrapURLKeys={{ key: 'AIzaSyBXOwItPi6wFftUyeZn86ARDepJeow4U9k' }}
+        bootstrapURLKeys={{ key: process.env.REACT_APP_GOOGLE_MAPS_API_KEY }}
         defaultCenter={coords}
         center={coords}
         defaultZoom={14}
         margin={[50, 50, 50, 50]}
-        options={''}
+        options={{
+          disableDefaultUI: true,
+          zoomControl: true,
+          styles: mapStyles
+        }}
         onChange={(e) => {
           setCoords({ lat: e.center.lat, lng: e.center.lng });
           setBounds({ ne: e.marginBounds.ne, sw: e.marginBounds.sw });
         }}
-        onChildClick={() => {}}
+        onChildClick={(child) => setChildClicked(child)}
       >
         {places &&
           places.map((place, index) => (
@@ -57,6 +69,17 @@ export default function Map({ coords, setCoords, setBounds, places }) {
               )}
             </div>
           ))}
+        {weatherData?.list?.map((data, index) => {
+          return (
+            <div key={index} lat={data.coord.lat} lng={data.coord.lon}>
+              <img
+                src={`http://openweathermap.org/img/w/${data.weather[0].icon}.png`}
+                alt={'weather'}
+                height={100}
+              />
+            </div>
+          );
+        })}
       </GoogleMapReact>
     </div>
   );
